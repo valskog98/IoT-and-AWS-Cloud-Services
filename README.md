@@ -115,3 +115,144 @@ void loop() {
 
     delay(100); // Short delay
 }
+
+```
+AWS Setup
+Setting Up AWS Services
+When creating an account with AWS, it's essential to select a region that supports all required services. In this project, the Ireland region was chosen, as it provides access to Timestream alongside other necessary AWS functionalities.
+
+AWS IoT Core:
+
+Created an IoT Thing in AWS IoT Core to manage the ESP32 device.
+Generated device security certificates for secure communication.
+Established a policy for the device to connect, publish, and receive messages.
+Example Policy in JSON:
+
+```json
+Copy
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "iot:Connect",
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "iot:Publish",
+            "Resource": "arn:aws:iot:eu-west-1:YOUR_ACCOUNT_ID:topic/pullUpCounter/data"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "iot:Subscribe",
+            "Resource": "arn:aws:iot:eu-west-1:YOUR_ACCOUNT_ID:topicfilter/pullUpCounter/data"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "iot:Receive",
+            "Resource": "*"
+        }
+    ]
+}
+```
+Amazon Timestream:
+
+Created a Timestream database named PullUpCounterDB to store pull-up count records.
+Created a table named PullUpData within the database to hold the data records.
+AWS Lambda Function
+To process incoming data and store it in Timestream, an AWS Lambda function was set up that is triggered by messages published to the IoT topic.
+
+Example Lambda Function Code
+```python
+Copy
+import json
+import boto3
+from datetime import datetime
+
+timestream_client = boto3.client('timestream-write')
+DATABASE_NAME = 'PullUpCounterDB'
+TABLE_NAME = 'PullUpData'
+
+def lambda_handler(event, context):
+    print("Received event: ", json.dumps(event))
+    
+    for record in event['Records']:
+        payload = json.loads(record['Sns']['Message'])
+        count = payload.get('Count')
+
+        if count is None:
+            print("Error: Count not found in the payload.")
+            return {
+                'statusCode': 400,
+                'body': json.dumps('Count not found.')
+            }
+
+        print(f"Processing Count: {count}")
+
+        timestamp = int(datetime.now().timestamp() * 1000)  # Current time in milliseconds
+
+        record_data = {
+            'Dimensions': [
+                {'Name': 'DeviceID', 'Value': 'YourDeviceID'},  # Modify as necessary
+            ],
+            'MeasureName': 'PullUpCount',
+            'MeasureValue': str(count),
+            'MeasureValueType': 'DOUBLE',
+            'Time': str(timestamp)
+        }
+
+        try:
+            response = timestream_client.write_records(
+                DatabaseName=DATABASE_NAME,
+                TableName=TABLE_NAME,
+                Records=[record_data]
+            )
+            print(f"Successfully wrote record to Timestream: {response}")
+        except Exception as e:
+            print(f"Error writing to Timestream: {e}")
+
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Data processed successfully!')
+    }
+```
+Data Visualization with AWS QuickSight
+Using Amazon QuickSight, I created a dataset connected to the Timestream database. This allows for insightful visualizations related to pull-up counts.
+
+Creating the Dataset
+Connecting QuickSight to Timestream:
+
+In QuickSight, create a new dataset by selecting Timestream as the data source.
+Provide the database (PullUpCounterDB) and table (PullUpData) names.
+Visualizing the Data:
+
+Create visualizations (e.g., bar charts, line graphs) to analyze trends in pull-up performance over time.
+Security and Scalability
+Security Measures
+IAM Policies:
+
+Ensured that the appropriate IAM policies are attached to QuickSight and Lambda roles.
+Implemented the principle of least privilege for all permissions.
+Secure MQTT Connection:
+
+Used TLS for secure communications between the ESP32 and AWS IoT.
+Scalability
+AWS provides a scalable architecture, enabling easy addition of multiple IoT devices without significant overhead. The architecture helps maintain performance even with increased data loads.
+
+Conclusion
+This project demonstrated the value of integrating IoT technology with cloud services, providing a framework for tracking and analyzing fitness metrics. Through the combination of the ESP32 microcontroller and the HC-SR04 ultrasonic sensor, I successfully created a pull-up counter that not only records the number of repetitions performed but also uploads this data to the AWS cloud for processing and analysis.
+
+Using AWS IoT Core, I established a secure communication channel to transmit data from the ESP32 to an AWS Lambda function. The Lambda function processes incoming data and writes it to Amazon Timestream, enabling efficient time-series data management and analytics.
+
+The integration with AWS QuickSight allowed for the creation of insightful visualizations, helping to monitor fitness progress over time. This project not only enhanced my understanding of cloud architecture and serverless computing but also illustrated the potential of real-time data analytics in fitness and health contexts.
+
+Moving forward, I see opportunities to expand this project by incorporating additional sensors to track other fitness metrics, creating alerts for progress milestones, and developing a mobile application for real-time statistics. This project has provided a solid foundation for exploring the vast capabilities of IoT within the AWS ecosystem, and I look forward to enhancing this system in the future.
+---
+Projektanteckning:
+
+På grund av oförutsedda omständigheter har jag stött på svårigheter med funktionaliteten hos min ESP32. Jag hade beställt en ny ESP32, men det har uppstått förseningar i leveransen, och jag har ännu inte fått den. Som en följd av detta kunde jag inte genomföra fullständiga tester av hela projektet. Jag har dock gjort det bästa av de resurser jag har och genomfört så mycket som möjligt med det jag hade tillgängligt.
+
+Jag vill uttrycka mitt uppriktiga tack till Johan Holmberg för hans inspirerande och stödjande undervisning här på Nackademin. Din vägledning har varit ovärderlig för min utveckling.
+
+Daniel Ericson
