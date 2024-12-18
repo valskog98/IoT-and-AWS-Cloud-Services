@@ -248,6 +248,7 @@ Using AWS IoT Core, I established a secure communication channel to transmit dat
 The integration with AWS QuickSight allowed for the creation of insightful visualizations, helping to monitor fitness progress over time. This project not only enhanced my understanding of cloud architecture and serverless computing but also illustrated the potential of real-time data analytics in fitness and health contexts.
 
 Moving forward, I see opportunities to expand this project by incorporating additional sensors to track other fitness metrics, creating alerts for progress milestones, and developing a mobile application for real-time statistics. This project has provided a solid foundation for exploring the vast capabilities of IoT within the AWS ecosystem, and I look forward to enhancing this system in the future.
+
 ---
 Projektanteckning:
 
