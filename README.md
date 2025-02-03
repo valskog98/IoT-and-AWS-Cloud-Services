@@ -257,3 +257,9 @@ På grund av oförutsedda omständigheter har jag stött på svårigheter med fu
 Jag vill uttrycka mitt uppriktiga tack till Johan Holmberg för hans inspirerande och stödjande undervisning här på Nackademin. Din vägledning har varit ovärderlig för min utveckling.
 
 Daniel Ericson
+---
+Bilder:
+![Schematisk skiss](https://github.com/user-attachments/assets/b00220e7-0767-4e1d-bdc2-e3a378e69d9e)
+
+![Histogram](https://github.com/user-attachments/assets/7c4ae468-4a69-477a-9af6-fd5ce9b55b95)
+
